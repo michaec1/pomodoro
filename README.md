@@ -2,6 +2,8 @@
 
 **[▶ 線上預覽](https://michaec1.github.io/pomodoro/pomodoro.html)**
 
+![預覽截圖](preview.png)
+
 一個簡單好用的番茄工作法計時器，提供網頁版與 Python 桌面版。
 
 ## 功能
