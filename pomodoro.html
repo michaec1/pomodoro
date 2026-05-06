@@ -1,563 +1,611 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🍅 番茄鐘</title>
-<meta property="og:title"       content="🍅 番茄鐘 Pomodoro Timer">
-<meta property="og:description" content="工作／短休／長休三模式，環形倒數進度條，支援鍵盤快捷鍵。">
-<meta property="og:image"       content="https://michaec1.github.io/pomodoro/preview.png">
-<meta property="og:url"         content="https://michaec1.github.io/pomodoro/pomodoro.html">
-<meta property="og:type"        content="website">
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🍅 123番茄鐘</title>
+  <meta property="og:title" content="🍅 番茄鐘 Pomodoro Timer">
+  <meta property="og:description" content="工作／短休／長休三模式，環形倒數進度條，支援鍵盤快捷鍵。">
+  <meta property="og:image" content="https://michaec1.github.io/pomodoro/preview.png">
+  <meta property="og:url" content="https://michaec1.github.io/pomodoro/pomodoro.html">
+  <meta property="og:type" content="website">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-:root {
-  --bg:      #16213e;
-  --panel:   #0f3460;
-  --ring-bg: #2a3f5f;
-  --gray:    #8892a4;
-  --white:   #ffffff;
-  --accent:  #e94560;
-}
+    :root {
+      --bg: #16213e;
+      --panel: #0f3460;
+      --ring-bg: #2a3f5f;
+      --gray: #8892a4;
+      --white: #ffffff;
+      --accent: #e94560;
+    }
 
-body {
-  background: var(--bg);
-  color: var(--white);
-  font-family: 'Segoe UI', system-ui, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  user-select: none;
-}
+    body {
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      user-select: none;
+    }
 
-.app {
-  width: 420px;
-  padding: 36px 24px 28px;
-  text-align: center;
-}
+    .app {
+      width: 420px;
+      padding: 36px 24px 28px;
+      text-align: center;
+    }
 
-.title {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: .5px;
-  margin-bottom: 22px;
-}
+    .title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: .5px;
+      margin-bottom: 22px;
+    }
 
-.tabs {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 26px;
-}
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 26px;
+    }
 
-.tab {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 7px;
-  background: var(--panel);
-  color: var(--gray);
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-  transition: background .2s, color .2s;
-}
+    .tab {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 7px;
+      background: var(--panel);
+      color: var(--gray);
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
 
-.tab.active {
-  background: var(--accent);
-  color: var(--white);
-}
+    .tab.active {
+      background: var(--accent);
+      color: var(--white);
+    }
 
-.ring-wrap {
-  position: relative;
-  width: 280px;
-  height: 280px;
-  margin: 0 auto 18px;
-}
+    .ring-wrap {
+      position: relative;
+      width: 280px;
+      height: 280px;
+      margin: 0 auto 18px;
+    }
 
-.ring-wrap svg {
-  display: block;
-  transform: rotate(-90deg); /* start arc at 12 o'clock */
-}
+    .ring-wrap svg {
+      display: block;
+      transform: rotate(-90deg);
+      /* start arc at 12 o'clock */
+    }
 
-.ring-bg-circle {
-  fill: none;
-  stroke: var(--ring-bg);
-  stroke-width: 14;
-}
+    .ring-bg-circle {
+      fill: none;
+      stroke: var(--ring-bg);
+      stroke-width: 14;
+    }
 
-.ring-arc {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 14;
-  stroke-linecap: round;
-  transition: stroke-dashoffset .6s linear, stroke .3s;
-}
+    .ring-arc {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 14;
+      stroke-linecap: round;
+      transition: stroke-dashoffset .6s linear, stroke .3s;
+    }
 
-.ring-inner {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-}
+    .ring-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
 
-.time-display {
-  font-size: 54px;
-  font-weight: 700;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -1px;
-}
+    .time-display {
+      font-size: 54px;
+      font-weight: 700;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -1px;
+    }
 
-.mode-label  { font-size: 14px; color: var(--gray); }
-.cycle-label { font-size: 11px; color: var(--ring-bg); }
-.cycle-label.active { color: var(--gray); }
+    .mode-label {
+      font-size: 14px;
+      color: var(--gray);
+    }
 
-.dots {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 22px;
-}
+    .cycle-label {
+      font-size: 11px;
+      color: var(--ring-bg);
+    }
 
-.dot {
-  font-size: 20px;
-  color: var(--ring-bg);
-  transition: color .3s;
-}
+    .cycle-label.active {
+      color: var(--gray);
+    }
 
-.dot.filled { color: var(--accent); }
+    .dots {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
 
-.controls {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: 14px;
-}
+    .dot {
+      font-size: 20px;
+      color: var(--ring-bg);
+      transition: color .3s;
+    }
 
-.btn-primary {
-  padding: 12px 36px;
-  border: none;
-  border-radius: 9px;
-  background: var(--accent);
-  color: var(--white);
-  font: inherit;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: filter .15s, transform .1s;
-  min-width: 130px;
-}
+    .dot.filled {
+      color: var(--accent);
+    }
 
-.btn-primary:hover  { filter: brightness(1.1); }
-.btn-primary:active { transform: scale(.97); }
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
 
-.btn-secondary {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 9px;
-  background: var(--panel);
-  color: var(--white);
-  font: inherit;
-  font-size: 16px;
-  cursor: pointer;
-  transition: filter .15s;
-}
+    .btn-primary {
+      padding: 12px 36px;
+      border: none;
+      border-radius: 9px;
+      background: var(--accent);
+      color: var(--white);
+      font: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter .15s, transform .1s;
+      min-width: 130px;
+    }
 
-.btn-secondary:hover { filter: brightness(1.15); }
+    .btn-primary:hover {
+      filter: brightness(1.1);
+    }
 
-.actions {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-}
+    .btn-primary:active {
+      transform: scale(.97);
+    }
 
-.btn-ghost {
-  background: none;
-  border: none;
-  color: var(--gray);
-  font: inherit;
-  font-size: 13px;
-  cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 6px;
-  transition: color .2s, background .2s;
-}
+    .btn-secondary {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 9px;
+      background: var(--panel);
+      color: var(--white);
+      font: inherit;
+      font-size: 16px;
+      cursor: pointer;
+      transition: filter .15s;
+    }
 
-.btn-ghost:hover { color: var(--white); background: var(--panel); }
+    .btn-secondary:hover {
+      filter: brightness(1.15);
+    }
 
-.overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.65);
-  justify-content: center;
-  align-items: center;
-  z-index: 50;
-  backdrop-filter: blur(3px);
-}
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
 
-.overlay.open { display: flex; }
+    .btn-ghost {
+      background: none;
+      border: none;
+      color: var(--gray);
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 6px;
+      transition: color .2s, background .2s;
+    }
 
-.modal {
-  background: #1e2d4e;
-  border: 1px solid var(--panel);
-  border-radius: 14px;
-  padding: 30px 28px 24px;
-  width: 320px;
-  animation: pop .18s ease-out;
-}
+    .btn-ghost:hover {
+      color: var(--white);
+      background: var(--panel);
+    }
 
-@keyframes pop {
-  from { transform: scale(.92); opacity: 0; }
-  to   { transform: scale(1);   opacity: 1; }
-}
+    .overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .65);
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+      backdrop-filter: blur(3px);
+    }
 
-.modal-title {
-  font-size: 17px;
-  font-weight: 700;
-  margin-bottom: 22px;
-}
+    .overlay.open {
+      display: flex;
+    }
 
-.modal-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 14px;
-}
+    .modal {
+      background: #1e2d4e;
+      border: 1px solid var(--panel);
+      border-radius: 14px;
+      padding: 30px 28px 24px;
+      width: 320px;
+      animation: pop .18s ease-out;
+    }
 
-.modal-row label { font-size: 14px; color: #ccc; }
+    @keyframes pop {
+      from {
+        transform: scale(.92);
+        opacity: 0;
+      }
 
-.modal-row input {
-  width: 76px;
-  padding: 7px 10px;
-  background: var(--panel);
-  border: 1px solid var(--ring-bg);
-  border-radius: 7px;
-  color: var(--white);
-  font: inherit;
-  font-size: 15px;
-  text-align: center;
-  outline: none;
-  transition: border-color .2s;
-}
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
 
-.modal-row input:focus { border-color: var(--accent); }
+    .modal-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 22px;
+    }
 
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 22px;
-}
+    .modal-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
 
-.modal-cancel {
-  padding: 9px 18px;
-  border: none;
-  border-radius: 7px;
-  background: var(--ring-bg);
-  color: #ccc;
-  font: inherit;
-  font-size: 14px;
-  cursor: pointer;
-}
+    .modal-row label {
+      font-size: 14px;
+      color: #ccc;
+    }
 
-.modal-save {
-  padding: 9px 22px;
-  border: none;
-  border-radius: 7px;
-  background: var(--accent);
-  color: var(--white);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: filter .15s;
-}
+    .modal-row input {
+      width: 76px;
+      padding: 7px 10px;
+      background: var(--panel);
+      border: 1px solid var(--ring-bg);
+      border-radius: 7px;
+      color: var(--white);
+      font: inherit;
+      font-size: 15px;
+      text-align: center;
+      outline: none;
+      transition: border-color .2s;
+    }
 
-.modal-save:hover { filter: brightness(1.1); }
+    .modal-row input:focus {
+      border-color: var(--accent);
+    }
 
-.toast {
-  position: fixed;
-  top: 28px;
-  left: 50%;
-  transform: translateX(-50%) translateY(-80px);
-  background: #1e2d4e;
-  border: 1px solid var(--panel);
-  border-radius: 10px;
-  padding: 14px 24px;
-  font-size: 15px;
-  white-space: nowrap;
-  box-shadow: 0 8px 30px rgba(0,0,0,.5);
-  transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .3s;
-  opacity: 0;
-  z-index: 100;
-}
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 22px;
+    }
 
-.toast.show {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-}
-</style>
+    .modal-cancel {
+      padding: 9px 18px;
+      border: none;
+      border-radius: 7px;
+      background: var(--ring-bg);
+      color: #ccc;
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .modal-save {
+      padding: 9px 22px;
+      border: none;
+      border-radius: 7px;
+      background: var(--accent);
+      color: var(--white);
+      font: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: filter .15s;
+    }
+
+    .modal-save:hover {
+      filter: brightness(1.1);
+    }
+
+    .toast {
+      position: fixed;
+      top: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: #1e2d4e;
+      border: 1px solid var(--panel);
+      border-radius: 10px;
+      padding: 14px 24px;
+      font-size: 15px;
+      white-space: nowrap;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, .5);
+      transition: transform .35s cubic-bezier(.34, 1.56, .64, 1), opacity .3s;
+      opacity: 0;
+      z-index: 100;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
 </head>
+
 <body>
 
-<div class="app">
-  <h1 class="title">🍅 番茄鐘</h1>
+  <div class="app">
+    <h1 class="title">🍅 番茄鐘</h1>
 
-  <div class="tabs">
-    <button class="tab" data-mode="work">工作時間</button>
-    <button class="tab" data-mode="short_break">短暫休息</button>
-    <button class="tab" data-mode="long_break">長休息</button>
-  </div>
+    <div class="tabs">
+      <button class="tab" data-mode="work">工作時間</button>
+      <button class="tab" data-mode="short_break">短暫休息</button>
+      <button class="tab" data-mode="long_break">長休息</button>
+    </div>
 
-  <div class="ring-wrap">
-    <svg width="280" height="280" viewBox="0 0 280 280">
-      <circle class="ring-bg-circle" cx="140" cy="140" r="110"/>
-      <circle class="ring-arc" id="ring-arc" cx="140" cy="140" r="110"/>
-    </svg>
-    <div class="ring-inner">
-      <div class="time-display" id="time-display">25:00</div>
-      <div class="mode-label"   id="mode-label">工作時間</div>
-      <div class="cycle-label"  id="cycle-label">第 1 輪・0/4</div>
+    <div class="ring-wrap">
+      <svg width="280" height="280" viewBox="0 0 280 280">
+        <circle class="ring-bg-circle" cx="140" cy="140" r="110" />
+        <circle class="ring-arc" id="ring-arc" cx="140" cy="140" r="110" />
+      </svg>
+      <div class="ring-inner">
+        <div class="time-display" id="time-display">25:00</div>
+        <div class="mode-label" id="mode-label">工作時間</div>
+        <div class="cycle-label" id="cycle-label">第 1 輪・0/4</div>
+      </div>
+    </div>
+
+    <div class="dots">
+      <span class="dot">●</span>
+      <span class="dot">●</span>
+      <span class="dot">●</span>
+      <span class="dot">●</span>
+    </div>
+
+    <div class="controls">
+      <button class="btn-primary" id="start-btn">▶ 開始</button>
+      <button class="btn-secondary" id="reset-btn">↺ 重置</button>
+    </div>
+    <div class="actions">
+      <button class="btn-ghost" id="settings-btn">⚙ 設定時間</button>
+      <button class="btn-ghost" id="skip-btn">⏭ 跳過</button>
     </div>
   </div>
 
-  <div class="dots">
-    <span class="dot">●</span>
-    <span class="dot">●</span>
-    <span class="dot">●</span>
-    <span class="dot">●</span>
-  </div>
-
-  <div class="controls">
-    <button class="btn-primary"   id="start-btn">▶ 開始</button>
-    <button class="btn-secondary" id="reset-btn">↺ 重置</button>
-  </div>
-  <div class="actions">
-    <button class="btn-ghost" id="settings-btn">⚙ 設定時間</button>
-    <button class="btn-ghost" id="skip-btn">⏭ 跳過</button>
-  </div>
-</div>
-
-<div class="overlay" id="settings-overlay">
-  <div class="modal">
-    <div class="modal-title">⚙ 設定時間</div>
-    <div class="modal-row">
-      <label>工作時間（分鐘）</label>
-      <input type="number" id="inp-work"  min="1" max="120">
-    </div>
-    <div class="modal-row">
-      <label>短休時間（分鐘）</label>
-      <input type="number" id="inp-short" min="1" max="120">
-    </div>
-    <div class="modal-row">
-      <label>長休時間（分鐘）</label>
-      <input type="number" id="inp-long"  min="1" max="120">
-    </div>
-    <div class="modal-actions">
-      <button class="modal-cancel" id="modal-cancel-btn">取消</button>
-      <button class="modal-save"   id="modal-save-btn">儲存</button>
+  <div class="overlay" id="settings-overlay">
+    <div class="modal">
+      <div class="modal-title">⚙ 設定時間</div>
+      <div class="modal-row">
+        <label>工作時間（分鐘）</label>
+        <input type="number" id="inp-work" min="1" max="120">
+      </div>
+      <div class="modal-row">
+        <label>短休時間（分鐘）</label>
+        <input type="number" id="inp-short" min="1" max="120">
+      </div>
+      <div class="modal-row">
+        <label>長休時間（分鐘）</label>
+        <input type="number" id="inp-long" min="1" max="120">
+      </div>
+      <div class="modal-actions">
+        <button class="modal-cancel" id="modal-cancel-btn">取消</button>
+        <button class="modal-save" id="modal-save-btn">儲存</button>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="toast" id="toast"></div>
+  <div class="toast" id="toast"></div>
 
-<script>
-const MODES = {
-  work:        { label: '工作時間', minutes: 25, color: '#e94560' },
-  short_break: { label: '短暫休息', minutes: 5,  color: '#0f9b58' },
-  long_break:  { label: '長休息',   minutes: 15, color: '#1a73e8' },
-};
+  <script>
+    const MODES = {
+      work: { label: '工作時間', minutes: 25, color: '#e94560' },
+      short_break: { label: '短暫休息', minutes: 5, color: '#0f9b58' },
+      long_break: { label: '長休息', minutes: 15, color: '#1a73e8' },
+    };
 
-const CIRC = 2 * Math.PI * 110;
+    const CIRC = 2 * Math.PI * 110;
 
-let mode      = 'work';
-let isRunning = false;
-let timeLeft  = MODES.work.minutes * 60;
-let sessions  = 0;
-let timerId   = null;
-let audioCtx  = null;
-let toastTimer = null;
+    let mode = 'work';
+    let isRunning = false;
+    let timeLeft = MODES.work.minutes * 60;
+    let sessions = 0;
+    let timerId = null;
+    let audioCtx = null;
+    let toastTimer = null;
 
-const arc            = document.getElementById('ring-arc');
-const timeDisplay    = document.getElementById('time-display');
-const modeLabel      = document.getElementById('mode-label');
-const cycleLabel     = document.getElementById('cycle-label');
-const startBtn       = document.getElementById('start-btn');
-const toastEl        = document.getElementById('toast');
-const overlayEl      = document.getElementById('settings-overlay');
-const inpWork        = document.getElementById('inp-work');
-const inpShort       = document.getElementById('inp-short');
-const inpLong        = document.getElementById('inp-long');
-const dotsEl         = document.querySelectorAll('.dot');
-const tabs           = document.querySelectorAll('.tab');
+    const arc = document.getElementById('ring-arc');
+    const timeDisplay = document.getElementById('time-display');
+    const modeLabel = document.getElementById('mode-label');
+    const cycleLabel = document.getElementById('cycle-label');
+    const startBtn = document.getElementById('start-btn');
+    const toastEl = document.getElementById('toast');
+    const overlayEl = document.getElementById('settings-overlay');
+    const inpWork = document.getElementById('inp-work');
+    const inpShort = document.getElementById('inp-short');
+    const inpLong = document.getElementById('inp-long');
+    const dotsEl = document.querySelectorAll('.dot');
+    const tabs = document.querySelectorAll('.tab');
 
-arc.style.strokeDasharray = CIRC;
+    arc.style.strokeDasharray = CIRC;
 
-function stopTimer() {
-  clearInterval(timerId);
-  timerId   = null;
-  isRunning = false;
-}
+    function stopTimer() {
+      clearInterval(timerId);
+      timerId = null;
+      isRunning = false;
+    }
 
-function toggle() {
-  if (isRunning) {
-    stopTimer();
-    startBtn.textContent = '▶ 繼續';
-  } else {
-    isRunning = true;
-    startBtn.textContent = '⏸ 暫停';
-    timerId = setInterval(tick, 1000);
-  }
-}
+    function toggle() {
+      if (isRunning) {
+        stopTimer();
+        startBtn.textContent = '▶ 繼續';
+      } else {
+        isRunning = true;
+        startBtn.textContent = '⏸ 暫停';
+        timerId = setInterval(tick, 1000);
+      }
+    }
 
-function tick() {
-  if (timeLeft <= 0) { finish(); return; }
-  timeLeft--;
-  renderTick();
-}
+    function tick() {
+      if (timeLeft <= 0) { finish(); return; }
+      timeLeft--;
+      renderTick();
+    }
 
-function finish(isSkip = false) {
-  stopTimer();
-  if (!isSkip) beep();
+    function finish(isSkip = false) {
+      stopTimer();
+      if (!isSkip) beep();
 
-  if (mode === 'work') {
-    sessions++;
-    mode = sessions % 4 === 0 ? 'long_break' : 'short_break';
-  } else {
-    mode = 'work';
-  }
+      if (mode === 'work') {
+        sessions++;
+        mode = sessions % 4 === 0 ? 'long_break' : 'short_break';
+      } else {
+        mode = 'work';
+      }
 
-  timeLeft = MODES[mode].minutes * 60;
-  startBtn.textContent = '▶ 開始';
-  renderMode();
+      timeLeft = MODES[mode].minutes * 60;
+      startBtn.textContent = '▶ 開始';
+      renderMode();
 
-  if (!isSkip) {
-    showToast(`時間到！切換到「${MODES[mode].label}」`);
-    notify(MODES[mode].label);
-  }
-}
+      if (!isSkip) {
+        showToast(`時間到！切換到「${MODES[mode].label}」`);
+        notify(MODES[mode].label);
+      }
+    }
 
-function resetTimer() { switchMode(mode); }
+    function resetTimer() { switchMode(mode); }
 
-function skip() { finish(true); }
+    function skip() { finish(true); }
 
-function switchMode(m) {
-  stopTimer();
-  mode     = m;
-  timeLeft = MODES[m].minutes * 60;
-  startBtn.textContent = '▶ 開始';
-  renderMode();
-}
+    function switchMode(m) {
+      stopTimer();
+      mode = m;
+      timeLeft = MODES[m].minutes * 60;
+      startBtn.textContent = '▶ 開始';
+      renderMode();
+    }
 
-function renderTick() {
-  const m  = String(Math.floor(timeLeft / 60)).padStart(2, '0');
-  const s  = String(timeLeft % 60).padStart(2, '0');
-  const ts = `${m}:${s}`;
-  timeDisplay.textContent    = ts;
-  arc.style.strokeDashoffset = CIRC * (1 - timeLeft / (MODES[mode].minutes * 60));
-  document.title             = `🍅 ${ts} ${MODES[mode].label}`;
-}
+    function renderTick() {
+      const m = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+      const s = String(timeLeft % 60).padStart(2, '0');
+      const ts = `${m}:${s}`;
+      timeDisplay.textContent = ts;
+      arc.style.strokeDashoffset = CIRC * (1 - timeLeft / (MODES[mode].minutes * 60));
+      document.title = `🍅 ${ts} ${MODES[mode].label}`;
+    }
 
-function renderMode() {
-  const color   = MODES[mode].color;
-  const inCycle = sessions % 4;
+    function renderMode() {
+      const color = MODES[mode].color;
+      const inCycle = sessions % 4;
 
-  modeLabel.textContent = MODES[mode].label;
-  arc.style.stroke      = color;
-  document.documentElement.style.setProperty('--accent', color);
-  tabs.forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
-  cycleLabel.textContent = `第 ${Math.floor(sessions / 4) + 1} 輪・${inCycle}/4`;
-  cycleLabel.classList.toggle('active', inCycle > 0);
-  dotsEl.forEach((d, i) => d.classList.toggle('filled', i < inCycle));
+      modeLabel.textContent = MODES[mode].label;
+      arc.style.stroke = color;
+      document.documentElement.style.setProperty('--accent', color);
+      tabs.forEach(t => t.classList.toggle('active', t.dataset.mode === mode));
+      cycleLabel.textContent = `第 ${Math.floor(sessions / 4) + 1} 輪・${inCycle}/4`;
+      cycleLabel.classList.toggle('active', inCycle > 0);
+      dotsEl.forEach((d, i) => d.classList.toggle('filled', i < inCycle));
 
-  renderTick();
-}
+      renderTick();
+    }
 
-function beep() {
-  try {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    [0, 0.45, 0.9].forEach(t => {
-      const osc  = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.frequency.value = 880;
-      osc.type = 'sine';
-      gain.gain.setValueAtTime(0.45, audioCtx.currentTime + t);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + t + 0.35);
-      osc.start(audioCtx.currentTime + t);
-      osc.stop(audioCtx.currentTime + t + 0.35);
+    function beep() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        [0, 0.45, 0.9].forEach(t => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.frequency.value = 880;
+          osc.type = 'sine';
+          gain.gain.setValueAtTime(0.45, audioCtx.currentTime + t);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + t + 0.35);
+          osc.start(audioCtx.currentTime + t);
+          osc.stop(audioCtx.currentTime + t + 0.35);
+        });
+      } catch (_) { }
+    }
+
+    function showToast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3500);
+    }
+
+    function notify(label) {
+      if (Notification?.permission === 'granted') {
+        new Notification('🍅 番茄鐘', { body: `時間到！切換到「${label}」` });
+      }
+    }
+
+    function openSettings() {
+      inpWork.value = MODES.work.minutes;
+      inpShort.value = MODES.short_break.minutes;
+      inpLong.value = MODES.long_break.minutes;
+      overlayEl.classList.add('open');
+    }
+
+    function closeSettings() {
+      overlayEl.classList.remove('open');
+    }
+
+    function saveSettings() {
+      const w = parseInt(inpWork.value);
+      const sh = parseInt(inpShort.value);
+      const l = parseInt(inpLong.value);
+      if ([w, sh, l].some(v => !Number.isFinite(v) || v < 1 || v > 120)) {
+        showToast('⚠ 請輸入 1–120 之間的整數');
+        return;
+      }
+      MODES.work.minutes = w;
+      MODES.short_break.minutes = sh;
+      MODES.long_break.minutes = l;
+      closeSettings();
+      resetTimer();
+    }
+
+    document.getElementById('start-btn').addEventListener('click', toggle);
+    document.getElementById('reset-btn').addEventListener('click', resetTimer);
+    document.getElementById('settings-btn').addEventListener('click', openSettings);
+    document.getElementById('skip-btn').addEventListener('click', skip);
+    document.getElementById('modal-cancel-btn').addEventListener('click', closeSettings);
+    document.getElementById('modal-save-btn').addEventListener('click', saveSettings);
+    overlayEl.addEventListener('click', e => { if (e.target === overlayEl) closeSettings(); });
+    tabs.forEach(t => t.addEventListener('click', () => switchMode(t.dataset.mode)));
+
+    document.addEventListener('keydown', e => {
+      if (e.target.tagName === 'INPUT') return;
+      if (e.code === 'Space') { e.preventDefault(); toggle(); }
+      if (e.code === 'KeyR') resetTimer();
+      if (e.code === 'KeyS') skip();
     });
-  } catch (_) {}
-}
 
-function showToast(msg) {
-  toastEl.textContent = msg;
-  toastEl.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3500);
-}
+    if (window.Notification && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
 
-function notify(label) {
-  if (Notification?.permission === 'granted') {
-    new Notification('🍅 番茄鐘', { body: `時間到！切換到「${label}」` });
-  }
-}
-
-function openSettings() {
-  inpWork.value  = MODES.work.minutes;
-  inpShort.value = MODES.short_break.minutes;
-  inpLong.value  = MODES.long_break.minutes;
-  overlayEl.classList.add('open');
-}
-
-function closeSettings() {
-  overlayEl.classList.remove('open');
-}
-
-function saveSettings() {
-  const w  = parseInt(inpWork.value);
-  const sh = parseInt(inpShort.value);
-  const l  = parseInt(inpLong.value);
-  if ([w, sh, l].some(v => !Number.isFinite(v) || v < 1 || v > 120)) {
-    showToast('⚠ 請輸入 1–120 之間的整數');
-    return;
-  }
-  MODES.work.minutes        = w;
-  MODES.short_break.minutes = sh;
-  MODES.long_break.minutes  = l;
-  closeSettings();
-  resetTimer();
-}
-
-document.getElementById('start-btn').addEventListener('click', toggle);
-document.getElementById('reset-btn').addEventListener('click', resetTimer);
-document.getElementById('settings-btn').addEventListener('click', openSettings);
-document.getElementById('skip-btn').addEventListener('click', skip);
-document.getElementById('modal-cancel-btn').addEventListener('click', closeSettings);
-document.getElementById('modal-save-btn').addEventListener('click', saveSettings);
-overlayEl.addEventListener('click', e => { if (e.target === overlayEl) closeSettings(); });
-tabs.forEach(t => t.addEventListener('click', () => switchMode(t.dataset.mode)));
-
-document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT') return;
-  if (e.code === 'Space') { e.preventDefault(); toggle(); }
-  if (e.code === 'KeyR')  resetTimer();
-  if (e.code === 'KeyS')  skip();
-});
-
-if (window.Notification && Notification.permission === 'default') {
-  Notification.requestPermission();
-}
-
-renderMode();
-</script>
+    renderMode();
+  </script>
 </body>
+
 </html>
