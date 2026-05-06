@@ -26,11 +26,22 @@
       --gray: #8892a4;
       --white: #ffffff;
       --accent: #e94560;
+      --card: #1e2d4e;
+    }
+
+    body.light {
+      --bg: #f0f4f8;
+      --panel: #dde6f0;
+      --ring-bg: #b8cde0;
+      --gray: #5a6a7a;
+      --white: #1a2a3a;
+      --card: #ffffff;
     }
 
     body {
       background: var(--bg);
       color: var(--white);
+      transition: background .3s, color .3s;
       font-family: 'Segoe UI', system-ui, sans-serif;
       display: flex;
       justify-content: center;
@@ -236,7 +247,7 @@
     }
 
     .modal {
-      background: #1e2d4e;
+      background: var(--card);
       border: 1px solid var(--panel);
       border-radius: 14px;
       padding: 30px 28px 24px;
@@ -271,7 +282,7 @@
 
     .modal-row label {
       font-size: 14px;
-      color: #ccc;
+      color: var(--gray);
     }
 
     .modal-row input {
@@ -304,7 +315,7 @@
       border: none;
       border-radius: 7px;
       background: var(--ring-bg);
-      color: #ccc;
+      color: var(--gray);
       font: inherit;
       font-size: 14px;
       cursor: pointer;
@@ -332,7 +343,7 @@
       top: 28px;
       left: 50%;
       transform: translateX(-50%) translateY(-80px);
-      background: #1e2d4e;
+      background: var(--card);
       border: 1px solid var(--panel);
       border-radius: 10px;
       padding: 14px 24px;
@@ -388,6 +399,7 @@
     <div class="actions">
       <button class="btn-ghost" id="settings-btn">⚙ 設定時間</button>
       <button class="btn-ghost" id="skip-btn">⏭ 跳過</button>
+      <button class="btn-ghost" id="theme-btn">☀ 淺色</button>
     </div>
   </div>
 
@@ -583,6 +595,15 @@
       closeSettings();
       resetTimer();
     }
+
+    const themeBtn = document.getElementById('theme-btn');
+    function applyTheme(light) {
+      document.body.classList.toggle('light', light);
+      themeBtn.textContent = light ? '🌙 深色' : '☀ 淺色';
+      localStorage.setItem('theme', light ? 'light' : 'dark');
+    }
+    applyTheme(localStorage.getItem('theme') === 'light');
+    themeBtn.addEventListener('click', () => applyTheme(!document.body.classList.contains('light')));
 
     document.getElementById('start-btn').addEventListener('click', toggle);
     document.getElementById('reset-btn').addEventListener('click', resetTimer);
