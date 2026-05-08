@@ -1,5 +1,9 @@
+import io
+import math
+import struct
 import tkinter as tk
 from tkinter import messagebox
+import wave
 import winsound
 
 
@@ -252,11 +256,32 @@ class PomodoroApp:
         self._start_btn.config(text="▶  開始")
         self._refresh()
 
+    def _make_beep_wav(self, freq=880, duration=0.35, volume=0.2):
+        sample_rate = 44100
+        n = int(sample_rate * duration)
+        peak = int(32767 * volume)
+        frames = bytearray()
+        for i in range(n):
+            fade = 1.0 - i / n
+            val = int(peak * fade * math.sin(2 * math.pi * freq * i / sample_rate))
+            frames += struct.pack('<h', val)
+        buf = io.BytesIO()
+        with wave.open(buf, 'wb') as w:
+            w.setnchannels(1)
+            w.setsampwidth(2)
+            w.setframerate(sample_rate)
+            w.writeframes(bytes(frames))
+        return buf.getvalue()
+
     def _beep(self):
         try:
-            winsound.MessageBeep(winsound.MB_ICONEXCLAMATION)
-            self.root.after(500, lambda: winsound.MessageBeep(winsound.MB_ICONEXCLAMATION))
-            self.root.after(1000, lambda: winsound.MessageBeep(winsound.MB_ICONEXCLAMATION))
+            if not hasattr(self, '_beep_wav'):
+                self._beep_wav = self._make_beep_wav()
+            data = self._beep_wav
+            flags = winsound.SND_MEMORY | winsound.SND_ASYNC
+            winsound.PlaySound(data, flags)
+            self.root.after(500,  lambda: winsound.PlaySound(data, flags))
+            self.root.after(1000, lambda: winsound.PlaySound(data, flags))
         except Exception:
             pass
 

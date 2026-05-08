@@ -550,7 +550,7 @@
           gain.connect(audioCtx.destination);
           osc.frequency.value = 880;
           osc.type = 'sine';
-          gain.gain.setValueAtTime(0.45, audioCtx.currentTime + t);
+          gain.gain.setValueAtTime(0.09, audioCtx.currentTime + t);
           gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + t + 0.35);
           osc.start(audioCtx.currentTime + t);
           osc.stop(audioCtx.currentTime + t + 0.35);
